@@ -15,11 +15,23 @@ namespace OrdersGenerations.Model
         public int ProductQuantity
         {
             get { return _productQuantity; }
-            set { _productQuantity = value; RaisePropertyChanged("ProductQuantity"); }
+            set
+            {
+                _productQuantity = value;
+                RaisePropertyChanged("ProductQuantity");
+                if (Product != null)
+                    TotalPrice = _productQuantity * Product.Price;
+            }
         }
 
+        private Dimension _dimension;
+
         public int DimensionID { get; set; }
-        public virtual Dimension Dimension { get; set; }
+        public virtual Dimension Dimension
+        {
+            get { return _dimension; }
+            set { _dimension = value; RaisePropertyChanged("Dimension"); }
+        }
 
         private double _totalPrice;
         public double TotalPrice

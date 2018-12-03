@@ -14,10 +14,6 @@ namespace OrdersGenerations.Repository
     {
         private readonly Context _context;
 
-        public OrderRepository()
-        {
-        }
-
         public OrderRepository(Context context)
         {
             _context = context;
@@ -38,7 +34,7 @@ namespace OrdersGenerations.Repository
                 {
                     positions.Add(new Position()
                     {
-                        Dimension = x.Dimension,
+                        DimensionID = x.DimensionID,
                         Product = x.Product,
                         ProductQuantity = x.ProductQuantity,
                         TotalPrice = x.TotalPrice
@@ -54,6 +50,19 @@ namespace OrdersGenerations.Repository
             }
 
             _context.SaveChanges();
+        }
+
+        public Order RemoveOrder(int orderID)
+        {
+            var dbEntry = _context.Orders.FirstOrDefault(x => x.ID == orderID);
+
+            if(dbEntry != null)
+            {
+                _context.Orders.Remove(dbEntry);
+                _context.SaveChanges();
+            }
+
+            return dbEntry;
         }
     }
 }

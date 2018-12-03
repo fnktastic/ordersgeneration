@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,15 @@ using System.Threading.Tasks;
 
 namespace OrdersGenerations.Model
 {
-    public class Dimension
+    public class Dimension : ViewModelBase
     {
-        public int ID { get; set; }
+        private int _id;
+        public int ID
+        {
+            get { return _id; }
+            set { _id = value; RaisePropertyChanged("ID"); }
+        }
+
         public string Caption { get; set; }
     }
 }

@@ -21,7 +21,7 @@
         <StackPanel>
             <DockPanel>
                 <Label>Накладна №</Label>
-                <TextBlock Text="{Binding CurrentOrder.OrderID}" />
+                <TextBlock Text="{Binding CurrentOrder.ID}" />
             </DockPanel>
             <DockPanel>
                 <Label>Клієнт</Label>
@@ -54,11 +54,15 @@
             <DockPanel HorizontalAlignment="Left">
                 <TextBox Width="250" />
                 <Button Content="Нова накладна"
-                        Command="{Binding NewOrder}"/>
-                <Button Content="Зформувати накладну" 
-                         Command="{Binding GenerateOrderCommand}"/>
+                        Command="{Binding CreateOrderCommand}"/>
+                <Button Content="Зберегти накладну" 
+                         Command="{Binding SaveOrderCommand}" IsEnabled="{Binding IsSavingAllowed}"/>
+                <Button Content="Копіювати накладну" 
+                         Command="{Binding CopyOrderCommand}"/>
+                <Button Content="Попередній перегляд"
+                        Command="{Binding ReportPreviewCommand}" />
             </DockPanel>
-            <DataGrid ItemsSource="{Binding SelectedPositions}" AutoGenerateColumns="False">
+            <DataGrid CanUserAddRows="False" IsHitTestVisible="{Binding IsSavingAllowed}" ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Штрих-код" Binding="{Binding Path=Product.Barcode}" />
                     <DataGridTextColumn Header="Товар" Binding="{Binding Path=Product.Caption}" />
@@ -66,13 +70,25 @@
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <ComboBox SelectedItem="{Binding Dimension}"  DisplayMemberPath="Caption" SelectedValuePath="DimensionID" ItemsSource="{Binding Path=DataContext.Dimensions, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
+                                <ComboBox SelectedItem="{Binding Dimension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                          SelectedValue="ID"
+                                          DisplayMemberPath="Caption" 
+                                          ItemsSource="{Binding Path=DataContext.Dimensions, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
 
                     </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Ціна" Binding="{Binding Path=Product.Price}" />
                     <DataGridTextColumn Header="Всього" Binding="{Binding Path=TotalPrice}" />
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="-"
+                                        Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.RemovePositionCommand}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
         </StackPanel>

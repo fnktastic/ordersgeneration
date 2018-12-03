@@ -4,6 +4,7 @@ using OrdersGenerations.DataAccess;
 using OrdersGenerations.Model;
 using OrdersGenerations.Repository;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
 using System.Linq;
@@ -15,16 +16,19 @@ namespace OrdersGenerations.ViewModel
         #region readonly state
         private readonly Context _context = null;
         private readonly IOrderRepository _orderRepository = null;
+        private readonly IPositionRepository _positionRepository = null;
         #endregion
 
         #region public properties
         public ObservableCollection<Client> Clients { get; set; }
+
         private ObservableCollection<Order> _orders;
         public ObservableCollection<Order> Orders
         {
             get { return _orders; }
             set { _orders = value; RaisePropertyChanged("Orders"); }
         }
+
         public ObservableCollection<Product> Products { get; set; }
         public ObservableCollection<Dimension> Dimensions { get; set; }
 
@@ -36,11 +40,19 @@ namespace OrdersGenerations.ViewModel
             {
                 _currentOrder = value;
                 RaisePropertyChanged("CurrentOrder");
-                SelectedClient = _currentOrder.Client;
-                if (_currentOrder.Positions != null)
-                    SelectedPositions = new ObservableCollection<Position>(_currentOrder.Positions);
+                if (_currentOrder != null)
+                {
+                    SelectedClient = _currentOrder.Client;
+                    if (_currentOrder.Positions != null)
+                        SelectedPositions = new ObservableCollection<Position>(_orderRepository.Orders.FirstOrDefault(x => x.ID == _currentOrder.ID)?.Positions);
+                    else
+                        SelectedPositions = new ObservableCollection<Position>();
+                }
                 else
-                    SelectedPositions = new ObservableCollection<Position>();
+                {
+                    SelectedClient = null;
+                    SelectedPositions = null;
+                }
             }
         }
 
@@ -58,6 +70,12 @@ namespace OrdersGenerations.ViewModel
             set { _selectedClient = value; RaisePropertyChanged("SelectedClient"); }
         }
 
+        private bool _isSavingAllowed;
+        public bool IsSavingAllowed
+        {
+            get { return _isSavingAllowed; }
+            set { _isSavingAllowed = value; RaisePropertyChanged("IsSavingAllowed"); }
+        }
         #endregion
 
         #region constructir
@@ -66,50 +84,116 @@ namespace OrdersGenerations.ViewModel
             Database.SetInitializer<Context>(new Initializer());
             _context = new Context();
             _orderRepository = new OrderRepository(_context);
+            _positionRepository = new PositionRepository(_context);
 
 
             Clients = new ObservableCollection<Client>(_context.Clients);
             Orders = new ObservableCollection<Order>(_orderRepository.Orders);
             Products = new ObservableCollection<Product>(_context.Products);
             Dimensions = new ObservableCollection<Dimension>(_context.Dimensions);
+            IsSavingAllowed = false;
 
             CurrentOrder = Orders.Last();
         }
         #endregion
 
         #region methods
+        private Order GetCurrentOrder(int orderID)
+        {
+            return _orderRepository.Orders.FirstOrDefault(x => x.ID == orderID);
+        }
         #endregion
 
         #region relay commands
-        private RelayCommand _newOrder;
-        public RelayCommand NewOrder
+
+
+        private RelayCommand<Position> _reportPreviewCommand;
+        public RelayCommand<Position> ReportPreviewCommand
         {
             get
             {
-                return _newOrder ?? (_newOrder = new RelayCommand(() =>
+                return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
-                    CurrentOrder = new Order();                    
+                    if (_positionRepository.RemovePosition(position.ID) != null)
+                        SelectedPositions.Remove(position);
                 }));
             }
         }
 
-        private RelayCommand _generateOrderCommand;
-        public RelayCommand GenerateOrderCommand
+        private RelayCommand<Position> _removePositionCommand;
+        public RelayCommand<Position> RemovePositionCommand
         {
             get
             {
-                return _generateOrderCommand ?? (_generateOrderCommand = new RelayCommand(() =>
+                return _removePositionCommand ?? (_removePositionCommand = new RelayCommand<Position>((position) =>
                 {
-                    Order orderTooSave = new Order()
+                    _positionRepository.RemovePosition(position.ID);
+                    SelectedPositions.Remove(position);
+                }));
+            }
+        }
+
+        private RelayCommand _createOrderCommand;
+        public RelayCommand CreateOrderCommand
+        {
+            get
+            {
+                return _createOrderCommand ?? (_createOrderCommand = new RelayCommand(() =>
+                {
+                    CurrentOrder = new Order();
+                }));
+            }
+        }
+
+        private RelayCommand _copyOrderCommand;
+        public RelayCommand CopyOrderCommand
+        {
+            get
+            {
+                return _copyOrderCommand ?? (_copyOrderCommand = new RelayCommand(() =>
+                {
+                    var positions = _selectedPositions
+                    .Select(x => new Position()
                     {
-                        ID = CurrentOrder.ID,
+                        DimensionID = x.DimensionID,
+                        ProductQuantity = x.ProductQuantity,
+                        TotalPrice = x.TotalPrice,
+                        Product = x.Product,
+                        Dimension = x.Dimension,
+                    });
+
+                    var order = new Order()
+                    {
+                        CreatedDate = DateTime.Now,
                         Client = _selectedClient,
-                        Positions = SelectedPositions.ToList<Position>(),
-                        CreatedDate = DateTime.Now
+                        Positions = new List<Position>(positions)
                     };
-                    _orderRepository.SaveOrder(orderTooSave);
+
+                    CurrentOrder = null;
+                    SelectedClient = order.Client;
+                    SelectedPositions = new ObservableCollection<Position>(order.Positions);
+                    IsSavingAllowed = true;
+                }));
+            }
+        }
+
+        private RelayCommand _saveOrderCommand;
+        public RelayCommand SaveOrderCommand
+        {
+            get
+            {
+                return _saveOrderCommand ?? (_saveOrderCommand = new RelayCommand(() =>
+                {
+                    Order orderToSave = new Order()
+                    {
+                        CreatedDate = DateTime.Now,
+                        Client = _selectedClient,
+                        Positions = _selectedPositions.ToList<Position>(),
+                    };
+                    _orderRepository.SaveOrder(orderToSave);
                     Orders = new ObservableCollection<Order>(_orderRepository.Orders);
                     CurrentOrder = _orders.Last();
+                    IsSavingAllowed = false;
                 }));
             }
         }
@@ -135,6 +219,8 @@ namespace OrdersGenerations.ViewModel
                           {
                               Product = product,
                           });
+
+                      IsSavingAllowed = true;
                   }));
             }
         }

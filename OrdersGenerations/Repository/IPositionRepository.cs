@@ -7,12 +7,10 @@ using System.Threading.Tasks;
 
 namespace OrdersGenerations.Repository
 {
-    public interface IOrderRepository
+    public interface IPositionRepository
     {
-        IEnumerable<Order> Orders { get; }
+        IEnumerable<Position> Positions { get; }
 
-        void SaveOrder(Order order);
-
-        Order RemoveOrder(int orderID);        
+        Position RemovePosition(int positionID);
     }
 }

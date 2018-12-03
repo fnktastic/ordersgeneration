@@ -90,7 +90,9 @@
     <Compile Include="Model\Order.cs" />
     <Compile Include="Model\Product.cs" />
     <Compile Include="Repository\IOrderRepository.cs" />
+    <Compile Include="Repository\IPositionRepository.cs" />
     <Compile Include="Repository\OrderRepository.cs" />
+    <Compile Include="Repository\PositionRepository.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
     <Page Include="MainWindow.xaml">
