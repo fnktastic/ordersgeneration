@@ -3,6 +3,7 @@ using GalaSoft.MvvmLight.Command;
 using OrdersGenerations.DataAccess;
 using OrdersGenerations.Model;
 using OrdersGenerations.Repository;
+using OrdersGenerations.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -114,7 +115,7 @@ namespace OrdersGenerations.ViewModel
             {
                 return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
-
+                    PrintUtil.Print(_currentOrder);
                 }));
             }
         }

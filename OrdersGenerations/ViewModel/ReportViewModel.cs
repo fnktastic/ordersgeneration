@@ -8,11 +8,6 @@ namespace OrdersGenerations.ViewModel
 {
     public class ReportViewModel
     {
-        public ReportViewModel(Order order)
-        {
-
-        }
-
         public int ID { get; set; }
         public DateTime CreatedDate { get; set; }
         public string ClientFullName { get; set; }
