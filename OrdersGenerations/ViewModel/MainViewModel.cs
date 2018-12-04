@@ -114,8 +114,7 @@ namespace OrdersGenerations.ViewModel
             {
                 return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
-                    if (_positionRepository.RemovePosition(position.ID) != null)
-                        SelectedPositions.Remove(position);
+
                 }));
             }
         }
