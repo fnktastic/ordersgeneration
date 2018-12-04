@@ -9,10 +9,209 @@
         x:Class="OrdersGenerations.MainWindow"
         mc:Ignorable="d"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="MainWindow" Height="650" Width="1100" MaxWidth="1100">
+    <Grid Margin="10">
         <TabControl>
-            <TabItem Header="Робота">
+            <TabItem Header="Накладні">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.25*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="0.75*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35" />
+                        <RowDefinition Height="0.9*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Column="0" Grid.Row="0">
+                        <Button Content="Нова накладна" Height="35" VerticalAlignment="Top"
+                                Command="{Binding CreateOrderCommand}"/>
+                    </DockPanel>
+                    <ContentControl Grid.Column="0" Grid.Row="1" Margin="0 10 0 0">
+                    <StackPanel>
+                        <GroupBox Header="Всі накладні">
+                            <TextBox Margin="0" 
+                                 Style="{DynamicResource SearchMetroTextBox}"
+                                 Controls:TextBoxHelper.Watermark="Пошук накладних"
+                                 IsEnabled="{Binding AllowChanges, Mode=TwoWay}"
+                                 Text="{Binding FilterString, UpdateSourceTrigger=PropertyChanged}"/>
+                        </GroupBox>
+                        <DataGrid ItemsSource="{Binding Orders}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectedItem="{Binding CurrentOrder}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="№" Binding="{Binding ID}" Width="0.13*" />
+                                <DataGridTextColumn Header="Дата" Binding="{Binding CreatedDate}" Width="0.4*" />
+                                <DataGridTextColumn Header="АЗС" Binding="{Binding Client.Description}" Width="0.47*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                            <Button Content="Копіювати вибрану накладну" 
+                                Command="{Binding CopyOrderCommand}"/>
+                        </StackPanel>
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsSavingAllowed, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                    <DockPanel Grid.Column="2" Grid.Row="0">
+                        <StackPanel Orientation="Vertical">
+                            <DockPanel>
+                                <Label FontSize="20" Content="Накладна №"/>
+                                <TextBlock FontSize="20" FontWeight="Bold" Text="{Binding CurrentOrder.ID}" TextAlignment="Center" VerticalAlignment="Center" />
+                                <Label FontSize="20" Content=" від "/>
+                                <TextBlock FontSize="20" FontWeight="Bold" Text="{Binding CurrentOrder.CreatedDate}" TextAlignment="Center" VerticalAlignment="Center" />
+                                <DockPanel.Style>
+                                    <Style TargetType="DockPanel">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=CurrentOrder}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Hidden"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DockPanel.Style>
+                            </DockPanel>
+                        </StackPanel>
+
+                        <Button Content="Попередній перегляд"
+                                DockPanel.Dock="Right"
+                                Height="35" VerticalAlignment="Top"
+                                HorizontalAlignment="Right"
+                                Margin="0 0 0 0"
+                                Width="150"
+                                Command="{Binding ReportPreviewCommand}" />
+                        <Button Content="Друк"
+                                Height="35" VerticalAlignment="Top"
+                                Margin="0 0 15 0"
+                                HorizontalAlignment="Right"
+                                Width="150"
+                                Command="{Binding ReportPreviewCommand}" />
+                    </DockPanel>
+                    <StackPanel Grid.Column="2" Grid.Row="1" Margin="0 10 0 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.7*" />
+                                <ColumnDefinition Width="15" />
+                                <ColumnDefinition Width="0.3*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <GroupBox Header="Деталі накладної">
+                                    <TextBox Margin="0" 
+                                             Style="{DynamicResource SearchMetroTextBox}"
+                                             Controls:TextBoxHelper.Watermark="Введіть штрихкод, назву чи ціну для пошуку"
+                                             IsEnabled="{Binding AllowChanges, Mode=TwoWay}"
+                                             Text="{Binding FilterString, UpdateSourceTrigger=PropertyChanged}"/>
+                                </GroupBox>
+                                <DataGrid CanUserAddRows="False" CanUserDeleteRows="False" IsHitTestVisible="{Binding IsSavingAllowed}" ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Штрих-код" Binding="{Binding Product.Barcode}"  />
+                                        <DataGridTextColumn Header="Товар" Binding="{Binding Product.Caption}" Width="*" />
+                                        <DataGridTextColumn Header="Кількість" Binding="{Binding ProductQuantity}" />
+                                        <DataGridTemplateColumn>
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ComboBox SelectedItem="{Binding Dimension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                              SelectedValue="ID"
+                                                              DisplayMemberPath="Caption" 
+                                                              ItemsSource="{Binding DataContext.Dimensions, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Ціна" Binding="{Binding Product.Price}" />
+                                        <DataGridTextColumn Header="Всього" Binding="{Binding TotalPrice}" />
+                                        <DataGridTemplateColumn Header="Дія">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="-"
+                                                            Command="{Binding DataContext.RemovePositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
+                                                            CommandParameter="{Binding}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2" >
+                                <ContentControl>
+                                    <ContentControl.Style>
+                                        <Style TargetType="ContentControl">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsSavingAllowed, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ContentControl.Style>
+                                    <StackPanel>
+                                        <GroupBox Header="Всі товари">
+                                            <TextBox Margin="0" 
+                                                     Style="{DynamicResource SearchMetroTextBox}"
+                                                     Controls:TextBoxHelper.Watermark="Введіть штрихкод, назву чи ціну"
+                                                     IsEnabled="{Binding AllowChanges, Mode=TwoWay}"
+                                                     Text="{Binding FilterString, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </GroupBox>
+                                        <DataGrid ItemsSource="{Binding Products}" MinHeight="150" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
+                                                <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
+                                                <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
+                                                <DataGridTemplateColumn Header="Дія">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <Button Content="+"
+                                                                    Command="{Binding DataContext.AddNewPositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
+                                                                    CommandParameter="{Binding}" />
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </StackPanel>
+                                </ContentControl>
+                                <ContentControl>
+                                    <GroupBox Header="Всі клієнти">
+                                        <ComboBox ItemsSource="{Binding Clients}" SelectedValuePath="Description" DisplayMemberPath="Description" SelectedItem="{Binding SelectedClient}" />
+                                    </GroupBox>
+                                    <ContentControl.Style>
+                                        <Style TargetType="ContentControl">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsSavingAllowed, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ContentControl.Style>
+                                </ContentControl>
+                                <GroupBox Header="Деталі клієнта">
+                                    <StackPanel>
+                                        <Label Content="{Binding SelectedClient.ID}" />
+                                        <Label Content="{Binding SelectedClient.FirstName}" />
+                                        <Label Content="{Binding SelectedClient.SurnameName}" />
+                                        <Label Content="{Binding SelectedClient.LastName}" />
+                                        <Label Content="{Binding SelectedClient.Address}" />
+                                        <Label Content="{Binding SelectedClient.Description}" />
+                                    </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+                        </Grid>
+                        <Grid>
+                        </Grid>
+                        <Button Content="Зберегти накладну" 
+                                Width="150"
+                                Margin=" 0 10 0 0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Command="{Binding SaveOrderCommand}" 
+                                IsEnabled="{Binding IsSavingAllowed}"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Товари">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.25*" />
@@ -23,100 +222,36 @@
                         <ColumnDefinition Width="0.75*" />
                         <ColumnDefinition Width="0.25*"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
+                    <StackPanel Grid.Column="0" Grid.Row="0">
                         <DockPanel>
-                            <Label Content="Накладна №"/>
-                            <TextBlock Text="{Binding CurrentOrder.ID}" />
+
                         </DockPanel>
                         <DockPanel>
                             <Label Content="Клієнт"/>
-                            <ListView ItemsSource="{Binding Clients}" SelectedItem="{Binding SelectedClient}">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn DisplayMemberBinding="{Binding FirstName}" />
-                                        <GridViewColumn DisplayMemberBinding="{Binding SurnameName}" />
-                                        <GridViewColumn DisplayMemberBinding="{Binding LastName}" />
-                                        <GridViewColumn DisplayMemberBinding="{Binding Address}" />
-                                        <GridViewColumn DisplayMemberBinding="{Binding Description}" />
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
+
                         </DockPanel>
                         <DockPanel>
                             <Label Content="Дата створення"/>
-                            <TextBlock Text="{Binding CurrentOrder.CreatedDate}" />
+
                         </DockPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Grid.Row="0">
-                        <DataGrid ItemsSource="{Binding Orders}" AutoGenerateColumns="False" SelectedItem="{Binding CurrentOrder}">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Номер" Binding="{Binding ID}" Width="0.5*" />
-                                <DataGridTextColumn Header="Дата" Binding="{Binding CreatedDate}" Width="0.5*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+
                     </StackPanel>
                     <StackPanel Grid.Column="0" Grid.Row="2">
                         <DockPanel HorizontalAlignment="Left">
                             <TextBox Width="250" />
-                            <Button Content="Нова накладна"
-                        Command="{Binding CreateOrderCommand}"/>
-                            <Button Content="Зберегти накладну" 
-                         Command="{Binding SaveOrderCommand}" IsEnabled="{Binding IsSavingAllowed}"/>
-                            <Button Content="Копіювати накладну" 
-                         Command="{Binding CopyOrderCommand}"/>
-                            <Button Content="Попередній перегляд"
-                        Command="{Binding ReportPreviewCommand}" />
                         </DockPanel>
-                        <DataGrid CanUserAddRows="False" IsHitTestVisible="{Binding IsSavingAllowed}" ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Штрих-код" Binding="{Binding Product.Barcode}" />
-                                <DataGridTextColumn Header="Товар" Binding="{Binding Product.Caption}" />
-                                <DataGridTextColumn Header="Кількість" Binding="{Binding ProductQuantity}" />
-                                <DataGridTemplateColumn>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <ComboBox SelectedItem="{Binding Dimension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                          SelectedValue="ID"
-                                          DisplayMemberPath="Caption" 
-                                          ItemsSource="{Binding DataContext.Dimensions, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
 
-                                </DataGridTemplateColumn>
-                                <DataGridTextColumn Header="Ціна" Binding="{Binding Product.Price}" />
-                                <DataGridTextColumn Header="Всього" Binding="{Binding TotalPrice}" />
-                                <DataGridTemplateColumn>
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="-"
-                                        Command="{Binding DataContext.RemovePositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
-                                        CommandParameter="{Binding}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Grid.Row="2">
                         <TextBox />
-                        <DataGrid  ItemsSource="{Binding Products}" AutoGenerateColumns="False">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
-                                <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
-                                <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
-                                <DataGridTemplateColumn Header="Дія">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate>
-                                            <Button Content="+"
-                                        Command="{Binding DataContext.AddNewPositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
-                                        CommandParameter="{Binding}" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+
                     </StackPanel>
                 </Grid>
+            </TabItem>
+            <TabItem Header="Клієнти">
+
             </TabItem>
             <TabItem Header="Накладна">
                 <WindowsFormsHost x:Name="windowsFormsHost1" />

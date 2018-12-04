@@ -79,7 +79,7 @@ namespace OrdersGenerations.ViewModel
         }
         #endregion
 
-        #region constructir
+        #region constructor
         public MainViewModel()
         {
             Database.SetInitializer<Context>(new Initializer());
@@ -93,8 +93,7 @@ namespace OrdersGenerations.ViewModel
             Products = new ObservableCollection<Product>(_context.Products);
             Dimensions = new ObservableCollection<Dimension>(_context.Dimensions);
             IsSavingAllowed = false;
-
-            CurrentOrder = Orders.Last();
+            CurrentOrder = null;
         }
         #endregion
 
@@ -106,8 +105,6 @@ namespace OrdersGenerations.ViewModel
         #endregion
 
         #region relay commands
-
-
         private RelayCommand<Position> _reportPreviewCommand;
         public RelayCommand<Position> ReportPreviewCommand
         {
@@ -140,6 +137,8 @@ namespace OrdersGenerations.ViewModel
             {
                 return _createOrderCommand ?? (_createOrderCommand = new RelayCommand(() =>
                 {
+                    CurrentOrder = null;
+                    IsSavingAllowed = true;
                     CurrentOrder = new Order();
                 }));
             }
