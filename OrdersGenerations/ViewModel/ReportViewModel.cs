@@ -14,6 +14,6 @@ namespace OrdersGenerations.ViewModel
         public string ClientDetails { get; set; }
         public string ClientAddress { get; set; }
         public double TotalSummary { get; set; }
-        public double TotalSummaryByWords { get; set; }
+        public string TotalSummaryByWords { get; set; }
     }
 }
