@@ -33,8 +33,8 @@ namespace OrdersGenerations.DataAccess
 
         protected override void Seed(Context context)
         {
-            context.Dimensions.Add(new Dimension() { Caption = "уп." });
             context.Dimensions.Add(new Dimension() { Caption = "шт." });
+            context.Dimensions.Add(new Dimension() { Caption = "к-т." });
 
             context.SaveChanges();
 
@@ -58,7 +58,7 @@ namespace OrdersGenerations.DataAccess
                         TotalPrice = 100,
                         Product = new Product()
                         {
-                            Barcode = "00001",
+                            Barcode = "8699947702669",
                             Caption = "Трос металевий",
                             Price = 10
                         }

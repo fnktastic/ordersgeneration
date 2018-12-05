@@ -8,7 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
+using System.Windows.Input;
 
 namespace OrdersGenerations.ViewModel
 {
@@ -77,6 +79,17 @@ namespace OrdersGenerations.ViewModel
             get { return _isSavingAllowed; }
             set { _isSavingAllowed = value; RaisePropertyChanged("IsSavingAllowed"); }
         }
+
+        private string _productSearch;
+        public string ProductSearch
+        {
+            get { return _productSearch; }
+            set
+            {
+                _productSearch = value;
+                RaisePropertyChanged("ProductSearch");
+            }
+        }
         #endregion
 
         #region constructor
@@ -98,6 +111,28 @@ namespace OrdersGenerations.ViewModel
         #endregion
 
         #region methods
+        private void AddProductIntoPositions(Product product)
+        {
+            var products = SelectedPositions.Select(x => x.Product);
+            if (products.Contains(product))
+            {
+                Position position = SelectedPositions.FirstOrDefault(p => p.Product == product);
+                position.ProductQuantity++;
+                position.TotalPrice = position.Product.Price * position.ProductQuantity;
+            }
+
+            else
+            {                
+                SelectedPositions.Add(new Position()
+                {
+                    Product = product,
+                    ProductQuantity = 1
+                });
+            }
+
+            IsSavingAllowed = true;
+        }
+
         private Order GetCurrentOrder(int orderID)
         {
             return _orderRepository.Orders.FirstOrDefault(x => x.ID == orderID);
@@ -105,6 +140,26 @@ namespace OrdersGenerations.ViewModel
         #endregion
 
         #region relay commands
+        private RelayCommand<KeyEventArgs> _checkForScannerCommand;
+        public RelayCommand<KeyEventArgs> CheckForScannerCommand
+        {
+            get
+            {
+                return _checkForScannerCommand ?? (_checkForScannerCommand = new RelayCommand<KeyEventArgs>((keyEvent) =>
+                {
+                    if (keyEvent.Key == Key.Return)
+                    {
+                        Product product = _positionRepository.Positions.FirstOrDefault(x => x.Product.Barcode == _productSearch)?.Product;
+                        if (product != null)
+                        {
+                            AddProductIntoPositions(product);
+                            ProductSearch = string.Empty;
+                        }
+                    }
+                }));
+            }
+        }
+
         private RelayCommand<Position> _reportPreviewCommand;
         public RelayCommand<Position> ReportPreviewCommand
         {
@@ -205,21 +260,7 @@ namespace OrdersGenerations.ViewModel
                 return _addNewPositionCommand ??
                   (_addNewPositionCommand = new RelayCommand<Product>(product =>
                   {
-                      var products = SelectedPositions.Select(x => x.Product);
-                      if (products.Contains(product))
-                      {
-                          Position position = SelectedPositions.FirstOrDefault(p => p.Product == product);
-                          position.ProductQuantity++;
-                          position.TotalPrice = position.Product.Price * position.ProductQuantity;
-                      }
-
-                      else
-                          SelectedPositions.Add(new Position()
-                          {
-                              Product = product,
-                          });
-
-                      IsSavingAllowed = true;
+                      AddProductIntoPositions(product);
                   }));
             }
         }
