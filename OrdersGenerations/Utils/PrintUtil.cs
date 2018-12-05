@@ -10,13 +10,14 @@ namespace OrdersGenerations.Utils
     public static class PrintUtil
     {
         private static MainWindow _mainWindow;
+        private static ReportViewer _reportViewer;
 
         public static void SetMainWindowContext(MainWindow mainWindow)
         {
             _mainWindow = mainWindow;
         }
 
-        public static void Print(Order order)
+        public static void Preview(Order order)
         {
             List<ReportViewModel> orderBasic = new List<ReportViewModel>()
             {
@@ -28,13 +29,16 @@ namespace OrdersGenerations.Utils
                     ClientDetails = order.Client.Description,
                     ClientFullName = string.Format("{0} {1} {2}", order.Client.FirstName, order.Client.SurnameName, order.Client.LastName),
                     TotalSummary = order.Positions.Select(x=>x.TotalPrice).Sum(),
-                    TotalSummaryByWords = PriceToWords(0)
+                    TotalSummaryByWords = NumberByWords.GrnPhrase(Convert.ToDecimal(order.Positions.Select(x=>x.TotalPrice).Sum())),
+                    PositionsCount = order.Positions.Count
                 }
             };
 
+            int counter = 0;
             List<ReportPositionViewModel> orderPositions = new List<ReportPositionViewModel>();
             order.Positions.ForEach(x =>
             {
+                counter++;
                 orderPositions.Add(new ReportPositionViewModel()
                 {
                     Barcode = x.Product.Barcode,
@@ -42,7 +46,8 @@ namespace OrdersGenerations.Utils
                     Dimension = x.Dimension.Caption,
                     Price = x.Product.Price,
                     Quantity = x.ProductQuantity,
-                    TotalPrice = x.TotalPrice
+                    TotalPrice = x.TotalPrice,
+                    Counter = counter
                 });
             });
             
@@ -59,18 +64,24 @@ namespace OrdersGenerations.Utils
             };
 
             string reportPath = "..\\..\\Report1.rdlc";
-            ReportViewer reportViewer = new ReportViewer();
-            reportViewer.ProcessingMode = ProcessingMode.Local;
-            reportViewer.LocalReport.ReportPath = reportPath;
-            reportViewer.LocalReport.DataSources.Add(reportDataSource);
-            reportViewer.LocalReport.DataSources.Add(reportDataSource2);
-            _mainWindow.windowsFormsHost1.Child = reportViewer;
-            reportViewer.RefreshReport();
+            _reportViewer = new ReportViewer();
+            _reportViewer.ProcessingMode = ProcessingMode.Local;
+            _reportViewer.LocalReport.ReportPath = reportPath;
+            _reportViewer.LocalReport.DataSources.Add(reportDataSource);
+            _reportViewer.LocalReport.DataSources.Add(reportDataSource2);
+            _mainWindow.windowsFormsHost1.Child = _reportViewer;
+            _reportViewer.ZoomMode = ZoomMode.Percent;
+            _reportViewer.ZoomPercent = 100;
+            _reportViewer.RefreshReport();
+            _reportViewer.ShowBackButton = false;
+            _reportViewer.ShowToolBar = false;
+            _reportViewer.ShowFindControls = false;
+            _reportViewer.SetDisplayMode(DisplayMode.PrintLayout);
         }
 
-        private static string PriceToWords(double price)
+        public static void Print()
         {
-            return "test 001";
+            _reportViewer.PrintDialog();
         }
     }
 }

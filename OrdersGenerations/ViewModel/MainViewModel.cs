@@ -167,7 +167,19 @@ namespace OrdersGenerations.ViewModel
             {
                 return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
-                    PrintUtil.Print(_currentOrder);
+                    PrintUtil.Preview(_currentOrder);
+                }));
+            }
+        }
+
+        private RelayCommand<Position> _reportPrintCommand;
+        public RelayCommand<Position> ReportPrintCommand
+        {
+            get
+            {
+                return _reportPrintCommand ?? (_reportPrintCommand = new RelayCommand<Position>((position) =>
+                {
+                    PrintUtil.Print();
                 }));
             }
         }

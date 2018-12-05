@@ -125,6 +125,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Utils\NumberByWords.cs" />
     <Compile Include="Utils\PrintUtil.cs" />
     <Compile Include="ViewModel\ReportPositionViewModel.cs" />
     <Compile Include="ViewModel\ReportViewModel.cs" />
