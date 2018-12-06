@@ -7,9 +7,12 @@ using OrdersGenerations.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace OrdersGenerations.ViewModel
@@ -20,6 +23,7 @@ namespace OrdersGenerations.ViewModel
         private readonly Context _context = null;
         private readonly IOrderRepository _orderRepository = null;
         private readonly IPositionRepository _positionRepository = null;
+        private readonly IProductRepository _productRepository = null;
         #endregion
 
         #region public properties
@@ -32,7 +36,13 @@ namespace OrdersGenerations.ViewModel
             set { _orders = value; RaisePropertyChanged("Orders"); }
         }
 
-        public ObservableCollection<Product> Products { get; set; }
+        private ObservableCollection<Product> _products;
+        public ObservableCollection<Product> Products
+        {
+            get { return _products; }
+            set { _products = value; RaisePropertyChanged("Products"); }
+        }
+
         public ObservableCollection<Dimension> Dimensions { get; set; }
 
         private Order _currentOrder;
@@ -43,18 +53,24 @@ namespace OrdersGenerations.ViewModel
             {
                 _currentOrder = value;
                 RaisePropertyChanged("CurrentOrder");
-                if (_currentOrder != null)
+                if (value?.ID != -1)
                 {
-                    SelectedClient = _currentOrder.Client;
-                    if (_currentOrder.Positions != null)
-                        SelectedPositions = new ObservableCollection<Position>(_orderRepository.Orders.FirstOrDefault(x => x.ID == _currentOrder.ID)?.Positions);
+                    if (_currentOrder != null)
+                    {
+                        SelectedClient = _currentOrder.Client;
+                        if (_currentOrder.Positions != null)
+                        {
+                            SelectedPositions = new ObservableCollection<Position>(_orderRepository.Orders.FirstOrDefault(x => x.ID == _currentOrder.ID)?.Positions);
+                            CalcTotalSum();
+                        }
+                        else
+                            SelectedPositions = new ObservableCollection<Position>();
+                    }
                     else
-                        SelectedPositions = new ObservableCollection<Position>();
-                }
-                else
-                {
-                    SelectedClient = null;
-                    SelectedPositions = null;
+                    {
+                        SelectedClient = null;
+                        SelectedPositions = null;
+                    }
                 }
             }
         }
@@ -73,6 +89,53 @@ namespace OrdersGenerations.ViewModel
             set { _selectedClient = value; RaisePropertyChanged("SelectedClient"); }
         }
 
+        private Product _selectedProduct;
+        public Product SelectedProduct
+        {
+            get { return _selectedProduct; }
+            set
+            {
+                if (value != null)
+                {
+                    ProductID = value.ID;
+                    Barcode = value.Barcode;
+                    Caption = value.Caption;
+                    Price = value.Price;
+                }
+
+                _selectedProduct = value;
+                RaisePropertyChanged("SelectedProduct");
+            }
+        }
+
+        private string _barcode;
+        public string Barcode
+        {
+            get { return _barcode; }
+            set { _barcode = value; RaisePropertyChanged("Barcode"); }
+        }
+
+        private string _caption;
+        public string Caption
+        {
+            get { return _caption; }
+            set { _caption = value; RaisePropertyChanged("Caption"); }
+        }
+
+        private double _price;
+        public double Price
+        {
+            get { return _price; }
+            set { _price = value; RaisePropertyChanged("Price"); }
+        }
+
+        private int _productID;
+        public int ProductID
+        {
+            get { return _productID; }
+            set { _productID = value; RaisePropertyChanged("ProductID"); }
+        }
+
         private bool _isSavingAllowed;
         public bool IsSavingAllowed
         {
@@ -80,16 +143,61 @@ namespace OrdersGenerations.ViewModel
             set { _isSavingAllowed = value; RaisePropertyChanged("IsSavingAllowed"); }
         }
 
-        private string _productSearch;
-        public string ProductSearch
+        private string _filterProductString;
+        public string FilterProductString
         {
-            get { return _productSearch; }
+            get { return _filterProductString; }
             set
             {
-                _productSearch = value;
-                RaisePropertyChanged("ProductSearch");
+                if (Equals(_filterProductString, value))
+                    return;
+                _filterProductString = value;
+                RaisePropertyChanged("FilterProductString");
+                FilteredProducts.Refresh();
             }
         }
+
+        private string _filteredOrdersString;
+        public string FilteredOrdersString
+        {
+            get { return _filteredOrdersString; }
+            set
+            {
+                if (Equals(_filteredOrdersString, value))
+                    return;
+                _filteredOrdersString = value;
+                RaisePropertyChanged("FilteredOrdersString");
+                FilteredOrders.Refresh();
+            }
+        }
+
+        private int _selectedTab;
+        public int SelectedTab
+        {
+            get { return _selectedTab; }
+            set { _selectedTab = value; RaisePropertyChanged("SelectedTab"); }
+        }
+
+        private double _overPercent;
+        public double OverPercent
+        {
+            get { return _overPercent; }
+            set
+            {
+                _overPercent = value;
+                RaisePropertyChanged("OverPercent");
+            }
+        }
+
+        private string _totalOrderSum;
+        public string TotalOrderSum
+        {
+            get { return _totalOrderSum; }
+            set { _totalOrderSum = value; RaisePropertyChanged("TotalOrderSum"); }
+        }
+
+        public ICollectionView FilteredOrders { get; set; }
+        public ICollectionView FilteredProducts { get; set; }
         #endregion
 
         #region constructor
@@ -99,18 +207,61 @@ namespace OrdersGenerations.ViewModel
             _context = new Context();
             _orderRepository = new OrderRepository(_context);
             _positionRepository = new PositionRepository(_context);
-
-
+            _productRepository = new ProductRepository(_context);
             Clients = new ObservableCollection<Client>(_context.Clients);
             Orders = new ObservableCollection<Order>(_orderRepository.Orders);
             Products = new ObservableCollection<Product>(_context.Products);
             Dimensions = new ObservableCollection<Dimension>(_context.Dimensions);
+            InitFilters();
             IsSavingAllowed = false;
             CurrentOrder = null;
+            OverPercent = 0;
+            SelectedTab = 0;
         }
         #endregion
 
         #region methods
+        private void CalcTotalSum()
+        {
+            if (SelectedPositions != null && SelectedPositions.Count > 0)
+                TotalOrderSum = string.Format("Всього {0} грн.", SelectedPositions.Select(x => x.TotalPrice).Sum());
+        }
+
+        private void InitCollections()
+        {
+            Products = new ObservableCollection<Product>(_productRepository.Products);
+        }
+
+        private void InitFilters()
+        {
+            FilteredOrders = CollectionViewSource.GetDefaultView(Orders);
+            FilteredOrders.Filter = OnOrdersFilter;
+            FilteredOrders.Refresh();
+
+            FilteredProducts = CollectionViewSource.GetDefaultView(Products);
+            FilteredProducts.Filter = OnProductsFilter;
+            FilteredProducts.Refresh();
+        }
+
+        private bool OnProductsFilter(object product)
+        {
+            if (string.IsNullOrWhiteSpace(_filterProductString))
+                return true;
+            Product o = product as Product;
+            return o.Barcode.ToLower().Contains(_filterProductString.ToLower())
+                || o.Caption.ToLower().Contains(_filterProductString.ToLower())
+                || o.Price.ToString("0.00").ToLower().Contains(_filterProductString.ToLower());
+        }
+
+        private bool OnOrdersFilter(object order)
+        {
+            if (string.IsNullOrWhiteSpace(_filteredOrdersString))
+                return true;
+            Order o = order as Order;
+            return o.Client.Description.ToLower().Contains(_filteredOrdersString.ToLower())
+                || o.CreatedDate.ToShortDateString().ToLower().Contains(_filteredOrdersString.ToLower());
+        }
+
         private void AddProductIntoPositions(Product product)
         {
             var products = SelectedPositions.Select(x => x.Product);
@@ -122,14 +273,17 @@ namespace OrdersGenerations.ViewModel
             }
 
             else
-            {                
+            {
                 SelectedPositions.Add(new Position()
                 {
                     Product = product,
-                    ProductQuantity = 1
+                    ProductQuantity = 1,
+                    DimensionID = 1,
+                    Dimension = _context.Dimensions.First()
                 });
             }
 
+            CalcTotalSum();
             IsSavingAllowed = true;
         }
 
@@ -149,11 +303,11 @@ namespace OrdersGenerations.ViewModel
                 {
                     if (keyEvent.Key == Key.Return)
                     {
-                        Product product = _positionRepository.Positions.FirstOrDefault(x => x.Product.Barcode == _productSearch)?.Product;
+                        Product product = _productRepository.Products.FirstOrDefault(x => x.Barcode == _filterProductString);
                         if (product != null)
                         {
                             AddProductIntoPositions(product);
-                            ProductSearch = string.Empty;
+                            FilterProductString = string.Empty;
                         }
                     }
                 }));
@@ -168,6 +322,8 @@ namespace OrdersGenerations.ViewModel
                 return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
                     PrintUtil.Preview(_currentOrder);
+                    Thread.Sleep(100);
+                    SelectedTab = 1;
                 }));
             }
         }
@@ -235,7 +391,7 @@ namespace OrdersGenerations.ViewModel
                         Positions = new List<Position>(positions)
                     };
 
-                    CurrentOrder = null;
+                    CurrentOrder = new Order() { ID = -1 };
                     SelectedClient = order.Client;
                     SelectedPositions = new ObservableCollection<Position>(order.Positions);
                     IsSavingAllowed = true;
@@ -260,6 +416,8 @@ namespace OrdersGenerations.ViewModel
                     Orders = new ObservableCollection<Order>(_orderRepository.Orders);
                     CurrentOrder = _orders.Last();
                     IsSavingAllowed = false;
+
+                    InitFilters();
                 }));
             }
         }
@@ -276,6 +434,73 @@ namespace OrdersGenerations.ViewModel
                   }));
             }
         }
+
+        private RelayCommand _saveNewProductCommand;
+        public RelayCommand SaveNewProductCommand
+        {
+            get
+            {
+                return _saveNewProductCommand ??
+                  (_saveNewProductCommand = new RelayCommand(() =>
+                  {
+                      Product product = new Product()
+                      {
+                          ID = ProductID,
+                          Caption = Caption,
+                          Barcode = Barcode,
+                          Price = Price
+                      };
+
+                      _productRepository.SaveProduct(product);
+                      SelectedProduct = new Product() { Caption = string.Empty, Barcode = string.Empty };
+                      //InitCollections();
+                  }));
+            }
+        }
+
+        private RelayCommand _makeBlankProductCommand;
+        public RelayCommand MakeBlankProductCommand
+        {
+            get
+            {
+                return _makeBlankProductCommand ??
+                  (_makeBlankProductCommand = new RelayCommand(() =>
+                  {
+                      SelectedProduct = new Product()
+                      {
+                          ID = 0,
+                          Caption = "",
+                          Barcode = "",
+                          Price = 0
+                      };
+                  }));
+            }
+        }
+
+        private RelayCommand _reCalculateTotlaPricesCommand;
+        public RelayCommand ReCalculateTotlaPricesCommand
+        {
+            get
+            {
+                return _reCalculateTotlaPricesCommand ??
+                  (_reCalculateTotlaPricesCommand = new RelayCommand(() =>
+                  {
+                      double.TryParse(_overPercent.ToString(), out double percent);
+                      if (percent >= 0 && percent < 100)
+                      {
+                          foreach (var position in SelectedPositions)
+                          {
+                              var currentPrice = position.ProductQuantity * position.Product.Price;
+                              var newPrice = currentPrice + ((currentPrice / 100) * percent);
+                              position.TotalPrice = newPrice;
+                          }
+                      }
+
+                      CalcTotalSum();
+                  }));
+            }
+        }
+
         #endregion
     }
 }

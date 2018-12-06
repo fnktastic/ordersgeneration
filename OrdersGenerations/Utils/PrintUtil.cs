@@ -4,6 +4,7 @@ using OrdersGenerations.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace OrdersGenerations.Utils
 {
@@ -74,7 +75,6 @@ namespace OrdersGenerations.Utils
             _reportViewer.ZoomPercent = 100;
             _reportViewer.RefreshReport();
             _reportViewer.ShowBackButton = false;
-            _reportViewer.ShowToolBar = false;
             _reportViewer.ShowFindControls = false;
             _reportViewer.SetDisplayMode(DisplayMode.PrintLayout);
         }
