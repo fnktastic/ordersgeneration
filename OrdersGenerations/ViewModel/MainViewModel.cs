@@ -51,6 +51,13 @@ namespace OrdersGenerations.ViewModel
 
         public ObservableCollection<Dimension> Dimensions { get; set; }
 
+        private Position _selectedPosition;
+        public Position SelectedPosition
+        {
+            get { return _selectedPosition; }
+            set { _selectedPosition = value; RaisePropertyChanged("SelectedPosition"); }
+        }
+
         private Order _currentOrder;
         public Order CurrentOrder
         {
@@ -412,6 +419,22 @@ namespace OrdersGenerations.ViewModel
             }
         }
 
+        private RelayCommand _labelPrintCommand;
+        public RelayCommand LabelPrintCommand
+        {
+            get
+            {
+                return _labelPrintCommand ?? (_labelPrintCommand = new RelayCommand(() =>
+                {
+                    SelectedTab = 1;
+                    if (_selectedPosition != null)
+                        PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
+                }));
+            }
+        }
+
+
+
         private RelayCommand<Position> _removePositionCommand;
         public RelayCommand<Position> RemovePositionCommand
         {
@@ -645,7 +668,7 @@ namespace OrdersGenerations.ViewModel
                           {
                               double price;
                               double.TryParse(lineArr[5], out price);
-                              
+
                               var product = new Product() //1 2 5
                               {
                                   Barcode = lineArr[1],

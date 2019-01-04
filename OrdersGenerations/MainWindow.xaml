@@ -70,6 +70,20 @@
                                     </Style>
                                 </ContentControl.Style>
                             </ContentControl>
+
+                            <ContentControl>
+                                <Button Margin="0 10 0 0" Content="Друк стікера" Command="{Binding LabelPrintCommand}"/>
+                                <ContentControl.Style>
+                                    <Style TargetType="ContentControl">
+                                        <Setter Property="IsEnabled" Value="True" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=SelectedPosition}" Value="{x:Null}">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentControl.Style>
+                            </ContentControl>
                         </StackPanel>
                         <ContentControl.Style>
                             <Style TargetType="ContentControl">
@@ -228,12 +242,16 @@
                                             <ScrollViewer MaxHeight="550" >
                                                 <DataGrid 
                                                     MaxHeight="450"
-                                            Margin="0 5 0 0" 
-                                            EnableRowVirtualization="True" 
-                                            EnableColumnVirtualization="True"
-                                            VirtualizingStackPanel.VirtualizationMode="Recycling"
-                                            VirtualizingStackPanel.IsVirtualizing="True"
-                                            CanUserAddRows="False" CanUserDeleteRows="False" ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AutoGenerateColumns="False">
+                                                    Margin="0 5 0 0" 
+                                                    EnableRowVirtualization="True" 
+                                                    EnableColumnVirtualization="True"
+                                                    VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                    VirtualizingStackPanel.IsVirtualizing="True"
+                                                    CanUserAddRows="False"
+                                                    CanUserDeleteRows="False"
+                                                    SelectedItem="{Binding SelectedPosition}"
+                                                    ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    AutoGenerateColumns="False">
                                                     <DataGrid.Columns>
                                                         <DataGridTextColumn Header="Штрих-код" Binding="{Binding Product.Barcode, Mode=OneWay}" MaxWidth="120" />
                                                         <DataGridTextColumn Header="Товар" Binding="{Binding Product.Caption, Mode=OneWay}" Width="*" />

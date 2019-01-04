@@ -3,6 +3,8 @@ using OrdersGenerations.Model;
 using OrdersGenerations.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Threading;
 
@@ -12,10 +14,44 @@ namespace OrdersGenerations.Utils
     {
         private static MainWindow _mainWindow;
         private static ReportViewer _reportViewer;
+        private static ReportViewer _labelViewer;
 
         public static void SetMainWindowContext(MainWindow mainWindow)
         {
             _mainWindow = mainWindow;
+        }
+
+        public static void PrintLabels(Product product, short copies)
+        {
+
+            ReportDataSource labelDataSource1 = new ReportDataSource
+            {
+                Name = "DataSet1",
+                Value = new List<Product>() { product }
+            };
+
+            PrinterSettings printerSettings = new PrinterSettings()
+            {
+                PrinterName = "HP LaserJet 1020",
+                Copies = copies,
+            };
+
+            PageSettings pageSettings = new PageSettings()
+            {
+                PaperSize = new PaperSize("CustomType", 300, 400)
+            };
+
+            string reportPath = "..\\..\\Label1.rdlc";
+            _labelViewer = new ReportViewer();
+            _labelViewer.ProcessingMode = ProcessingMode.Local;
+            _labelViewer.LocalReport.ReportPath = reportPath;
+            _labelViewer.LocalReport.DataSources.Add(labelDataSource1);            
+            _mainWindow.windowsFormsHost1.Child = _labelViewer;
+            _labelViewer.PrinterSettings = printerSettings;
+            //_labelViewer.SetPageSettings(pageSettings);
+            _labelViewer.RefreshReport();
+
+            //_labelViewer.PrintDialog();
         }
 
         public static void Preview(Order order)
