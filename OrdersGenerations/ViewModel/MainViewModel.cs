@@ -24,10 +24,16 @@ namespace OrdersGenerations.ViewModel
         private readonly IOrderRepository _orderRepository = null;
         private readonly IPositionRepository _positionRepository = null;
         private readonly IProductRepository _productRepository = null;
+        private readonly IClientRepository _clientRepository = null;
         #endregion
 
         #region public properties
-        public ObservableCollection<Client> Clients { get; set; }
+        private ObservableCollection<Client> _clients;
+        public ObservableCollection<Client> Clients
+        {
+            get { return _clients; }
+            set { _clients = value; RaisePropertyChanged("Clients"); }
+        }
 
         private ObservableCollection<Order> _orders;
         public ObservableCollection<Order> Orders
@@ -136,6 +142,71 @@ namespace OrdersGenerations.ViewModel
             set { _productID = value; RaisePropertyChanged("ProductID"); }
         }
 
+        private Client _selectedClientInTab;
+        public Client SelectedClientInTab
+        {
+            get { return _selectedClientInTab; }
+            set
+            {
+                if (value != null)
+                {
+                    ClientID = value.ID;
+                    FirstName = value.FirstName;
+                    LastName = value.LastName;
+                    SurName = value.SurnameName;
+                    Address = value.Address;
+                    Description = value.Description;
+
+                }
+
+                _selectedClientInTab = value;
+                RaisePropertyChanged("SelectedClientInTab");
+            }
+        }
+        private int _clientID;
+        public int ClientID
+        {
+            get { return _clientID; }
+            set { _clientID = value; RaisePropertyChanged("ClientID"); }
+        }
+
+        private string _firstName;
+        public string FirstName
+        {
+            get { return _firstName; }
+            set { _firstName = value; RaisePropertyChanged("FirstName"); }
+        }
+
+        private string _surName;
+        public string SurName
+        {
+            get { return _surName; }
+            set { _surName = value; RaisePropertyChanged("SurName"); }
+        }
+
+        private string _lastName;
+        public string LastName
+        {
+            get { return _lastName; }
+            set { _lastName = value; RaisePropertyChanged("LastName"); }
+        }
+
+        private string _address;
+        public string Address
+        {
+            get { return _address; }
+            set { _address = value; RaisePropertyChanged("Address"); }
+        }
+
+        private string _description;
+        public string Description
+        {
+            get { return _description; }
+            set { _description = value; RaisePropertyChanged("Description"); }
+        }
+
+
+
         private bool _isSavingAllowed;
         public bool IsSavingAllowed
         {
@@ -208,7 +279,8 @@ namespace OrdersGenerations.ViewModel
             _orderRepository = new OrderRepository(_context);
             _positionRepository = new PositionRepository(_context);
             _productRepository = new ProductRepository(_context);
-            Clients = new ObservableCollection<Client>(_context.Clients);
+            _clientRepository = new ClientRepository(_context);
+            Clients = new ObservableCollection<Client>(_clientRepository.Clients);
             Orders = new ObservableCollection<Order>(_orderRepository.Orders);
             Products = new ObservableCollection<Product>(_context.Products);
             Dimensions = new ObservableCollection<Dimension>(_context.Dimensions);
@@ -477,6 +549,62 @@ namespace OrdersGenerations.ViewModel
             }
         }
 
+        private RelayCommand _makeBlankClientCommand;
+        public RelayCommand MakeBlankClientCommand
+        {
+            get
+            {
+                return _makeBlankClientCommand ??
+                  (_makeBlankClientCommand = new RelayCommand(() =>
+                  {
+                      SelectedClientInTab = new Client()
+                      {
+                          ID = 0,
+                          FirstName = "",
+                          LastName = "",
+                          SurnameName = "",
+                          Description = "",
+                          Address = ""
+                      };
+                  }));
+            }
+        }
+
+        private RelayCommand _saveNewClientCommand;
+        public RelayCommand SaveNewClientCommand
+        {
+            get
+            {
+                return _saveNewClientCommand ??
+                  (_saveNewClientCommand = new RelayCommand(() =>
+                  {
+                      Client client = new Client()
+                      {
+                          ID = ClientID,
+                          Address = Address,
+                          Description = Description,
+                          FirstName = FirstName,
+                          SurnameName = SurName,
+                          LastName = LastName
+                      };
+
+                      _clientRepository.SaveClient(client);
+                      SelectedClientInTab = new Client()
+                      {
+                          ID = 0,
+                          FirstName = "",
+                          LastName = "",
+                          SurnameName = "",
+                          Description = "",
+                          Address = ""
+                      };
+
+                      Clients = new ObservableCollection<Client>(_clientRepository.Clients);
+                      //InitCollections();
+                  }));
+            }
+        }
+
         private RelayCommand _reCalculateTotlaPricesCommand;
         public RelayCommand ReCalculateTotlaPricesCommand
         {
@@ -501,6 +629,36 @@ namespace OrdersGenerations.ViewModel
             }
         }
 
+        private RelayCommand _importCommand;
+        public RelayCommand ImportCommand
+        {
+            get
+            {
+                return _importCommand ??
+                  (_importCommand = new RelayCommand(() =>
+                  {
+                      var fileLines = System.IO.File.ReadAllLines("Items2.txt");
+                      foreach (var singleLine in fileLines)
+                      {
+                          var lineArr = singleLine.Split(';');
+                          if (lineArr.Length > 5)
+                          {
+                              double price;
+                              double.TryParse(lineArr[5], out price);
+                              
+                              var product = new Product() //1 2 5
+                              {
+                                  Barcode = lineArr[1],
+                                  Caption = lineArr[2],
+                                  Price = price
+                              };
+
+                              _productRepository.SaveProduct(product);
+                          }
+                      }
+                  }));
+            }
+        }
         #endregion
     }
 }

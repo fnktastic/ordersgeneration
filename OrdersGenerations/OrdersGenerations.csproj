@@ -125,6 +125,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Repository\ClientRepository.cs" />
+    <Compile Include="Repository\IClientRepository.cs" />
     <Compile Include="Repository\IProductRepository.cs" />
     <Compile Include="Repository\ProductRepository.cs" />
     <Compile Include="Utils\NumberByWords.cs" />

@@ -38,7 +38,7 @@ namespace OrdersGenerations.DataAccess
 
             context.SaveChanges();
 
-            Order order1 = new Order()
+            /*Order order1 = new Order()
             {
                 CreatedDate = DateTime.Now,
                 Client = new Client()
@@ -132,6 +132,7 @@ namespace OrdersGenerations.DataAccess
             };
             context.Orders.Add(order1);
             context.Orders.Add(order2);
+            */
             context.SaveChanges();
         }
     }
