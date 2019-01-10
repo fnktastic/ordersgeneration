@@ -62,38 +62,6 @@
           <PaddingRight>1pt</PaddingRight>
         </Style>
       </Textbox>
-      <Textbox Name="Barcode">
-        <CanGrow>true</CanGrow>
-        <KeepTogether>true</KeepTogether>
-        <Paragraphs>
-          <Paragraph>
-            <TextRuns>
-              <TextRun>
-                <Value>=First(Fields!Barcode.Value, "DataSet2")</Value>
-                <Style>
-                  <FontFamily>Free 3 of 9 Extended</FontFamily>
-                  <FontSize>18pt</FontSize>
-                </Style>
-              </TextRun>
-            </TextRuns>
-            <Style>
-              <TextAlign>Center</TextAlign>
-            </Style>
-          </Paragraph>
-        </Paragraphs>
-        <rd:DefaultName>Barcode</rd:DefaultName>
-        <Height>0.482cm</Height>
-        <Width>3.00583cm</Width>
-        <ZIndex>1</ZIndex>
-        <Style>
-          <Border>
-            <Style>None</Style>
-          </Border>
-          <VerticalAlign>Top</VerticalAlign>
-          <PaddingLeft>2pt</PaddingLeft>
-          <PaddingRight>2pt</PaddingRight>
-        </Style>
-      </Textbox>
       <Textbox Name="Caption">
         <CanGrow>true</CanGrow>
         <KeepTogether>true</KeepTogether>
@@ -104,7 +72,7 @@
                 <Value>=First(Fields!Name.Value, "DataSet2")</Value>
                 <Style>
                   <FontFamily>Calibri</FontFamily>
-                  <FontSize>5pt</FontSize>
+                  <FontSize>7pt</FontSize>
                 </Style>
               </TextRun>
             </TextRuns>
@@ -114,10 +82,9 @@
           </Paragraph>
         </Paragraphs>
         <rd:DefaultName>Caption</rd:DefaultName>
-        <Top>0.72894cm</Top>
-        <Height>0.56392cm</Height>
+        <Height>0.94008cm</Height>
         <Width>3.00583cm</Width>
-        <ZIndex>2</ZIndex>
+        <ZIndex>1</ZIndex>
         <Style>
           <Border>
             <Style>None</Style>
@@ -126,37 +93,6 @@
           <PaddingLeft>3pt</PaddingLeft>
           <PaddingRight>3pt</PaddingRight>
           <PaddingTop>1pt</PaddingTop>
-        </Style>
-      </Textbox>
-      <Textbox Name="Barcode1">
-        <CanGrow>true</CanGrow>
-        <KeepTogether>true</KeepTogether>
-        <Paragraphs>
-          <Paragraph>
-            <TextRuns>
-              <TextRun>
-                <Value>=First(Fields!BarcodeNumber.Value, "DataSet2")</Value>
-                <Style>
-                  <FontSize>4pt</FontSize>
-                </Style>
-              </TextRun>
-            </TextRuns>
-            <Style>
-              <TextAlign>Center</TextAlign>
-            </Style>
-          </Paragraph>
-        </Paragraphs>
-        <rd:DefaultName>Barcode1</rd:DefaultName>
-        <Top>0.18976in</Top>
-        <Height>0.08334in</Height>
-        <Width>1.1834in</Width>
-        <ZIndex>3</ZIndex>
-        <Style>
-          <Border>
-            <Style>None</Style>
-          </Border>
-          <PaddingLeft>1pt</PaddingLeft>
-          <PaddingRight>1pt</PaddingRight>
         </Style>
       </Textbox>
     </ReportItems>

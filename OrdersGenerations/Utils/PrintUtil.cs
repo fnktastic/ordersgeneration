@@ -4,6 +4,7 @@ using OrdersGenerations.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing.Printing;
 using System.Linq;
 using System.Threading;
@@ -21,37 +22,96 @@ namespace OrdersGenerations.Utils
             _mainWindow = mainWindow;
         }
 
+        public static void PrintLabelsWithoutBarcode(Product product, short copies)
+        {
+            try
+            {
+                ItemLabelViewModel itemLabelViewModel = new ItemLabelViewModel()
+                {
+                    Barcode = string.Format("*{0}*", product.Barcode),
+                    BarcodeNumber = product.Barcode,
+                    Name = product.Caption
+                };
+                ReportDataSource labelDataSource1 = new ReportDataSource
+                {
+                    Name = "DataSet2",
+                    Value = new List<ItemLabelViewModel>() { itemLabelViewModel }
+                };
+
+                PrinterSettings printerSettings = new PrinterSettings()
+                {
+                    PrinterName = "Xprinter XP-370B",
+                    Copies = copies,
+                };
+
+                var ps = new PaperSize("Custom", 130, 80);
+                ps.RawKind = (int)PaperKind.Custom;
+                PageSettings pageSettings = new PageSettings()
+                {
+                    PaperSize = ps,
+                };
+
+                string reportPath = "..\\..\\Label2.rdlc";
+                _labelViewer = new ReportViewer();
+                _labelViewer.ProcessingMode = ProcessingMode.Local;
+                _labelViewer.LocalReport.ReportPath = reportPath;
+                _labelViewer.LocalReport.DataSources.Add(labelDataSource1);
+                _mainWindow.windowsFormsHost1.Child = _labelViewer;
+                _labelViewer.PrinterSettings = printerSettings;
+                _labelViewer.SetPageSettings(pageSettings);
+                _labelViewer.SetDisplayMode(DisplayMode.PrintLayout);
+                _labelViewer.RefreshReport();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+
         public static void PrintLabels(Product product, short copies)
         {
-
-            ReportDataSource labelDataSource1 = new ReportDataSource
+            try
             {
-                Name = "DataSet1",
-                Value = new List<Product>() { product }
-            };
+                ItemLabelViewModel itemLabelViewModel = new ItemLabelViewModel()
+                {
+                    Barcode = string.Format("*{0}*", product.Barcode),
+                    BarcodeNumber = product.Barcode,
+                    Name = product.Caption
+                };
+                ReportDataSource labelDataSource1 = new ReportDataSource
+                {
+                    Name = "DataSet2",
+                    Value = new List<ItemLabelViewModel>() { itemLabelViewModel }
+                };
 
-            PrinterSettings printerSettings = new PrinterSettings()
+                PrinterSettings printerSettings = new PrinterSettings()
+                {
+                    PrinterName = "Xprinter XP-370B",
+                    Copies = copies,
+                };
+
+                var ps = new PaperSize("Custom", 130, 80);
+                ps.RawKind = (int)PaperKind.Custom;
+                PageSettings pageSettings = new PageSettings()
+                {
+                    PaperSize = ps,
+                };
+
+                string reportPath = "..\\..\\Label1.rdlc";
+                _labelViewer = new ReportViewer();
+                _labelViewer.ProcessingMode = ProcessingMode.Local;
+                _labelViewer.LocalReport.ReportPath = reportPath;
+                _labelViewer.LocalReport.DataSources.Add(labelDataSource1);
+                _mainWindow.windowsFormsHost1.Child = _labelViewer;
+                _labelViewer.PrinterSettings = printerSettings;
+                _labelViewer.SetPageSettings(pageSettings);
+                _labelViewer.SetDisplayMode(DisplayMode.PrintLayout);
+                _labelViewer.RefreshReport();
+            }
+            catch(Exception ex)
             {
-                PrinterName = "HP LaserJet 1020",
-                Copies = copies,
-            };
-
-            PageSettings pageSettings = new PageSettings()
-            {
-                PaperSize = new PaperSize("CustomType", 300, 400)
-            };
-
-            string reportPath = "..\\..\\Label1.rdlc";
-            _labelViewer = new ReportViewer();
-            _labelViewer.ProcessingMode = ProcessingMode.Local;
-            _labelViewer.LocalReport.ReportPath = reportPath;
-            _labelViewer.LocalReport.DataSources.Add(labelDataSource1);            
-            _mainWindow.windowsFormsHost1.Child = _labelViewer;
-            _labelViewer.PrinterSettings = printerSettings;
-            //_labelViewer.SetPageSettings(pageSettings);
-            _labelViewer.RefreshReport();
-
-            //_labelViewer.PrintDialog();
+                Debug.WriteLine(ex.Message);
+            }
         }
 
         public static void Preview(Order order)
@@ -87,7 +147,7 @@ namespace OrdersGenerations.Utils
                     Counter = counter
                 });
             });
-            
+
             ReportDataSource reportDataSource = new ReportDataSource
             {
                 Name = "DataSet1",

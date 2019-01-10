@@ -428,7 +428,31 @@ namespace OrdersGenerations.ViewModel
                 {
                     SelectedTab = 1;
                     if (_selectedPosition != null)
-                        PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
+                    {
+                        if (_selectedPosition.Product != null)
+                        {
+                            if (string.IsNullOrEmpty(_selectedPosition.Product.Barcode))
+                            {
+                                Random rnd = new Random();
+                                string newBarcode = rnd.Next(10000, 99000).ToString();
+                                _selectedPosition.Product.Barcode = newBarcode;
+                                _productRepository.SaveProduct(_selectedPosition.Product);
+                                PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
+                                return;
+                            }
+                            else
+                            {
+                                if(_selectedPosition.Product.Barcode.Length == 5)
+                                {
+                                    PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
+                                    return;
+                                }
+
+                                PrintUtil.PrintLabelsWithoutBarcode(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
+                            }
+                           
+                        }
+                    }
                 }));
             }
         }
