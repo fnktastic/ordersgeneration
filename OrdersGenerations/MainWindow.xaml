@@ -12,7 +12,7 @@
         x:Class="OrdersGenerations.MainWindow"
         mc:Ignorable="d"
         DataContext="{Binding Main, Source={StaticResource Locator}}"
-        Title="MainWindow" Height="650" Width="1300">
+        Title="Робота з накладними | версія 1.06" Height="700" Width="1300">
     <Grid Margin="10">
         <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <TabItem Header="Накладні" TabIndex="0">
@@ -50,7 +50,7 @@
                                               AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectedItem="{Binding CurrentOrder}">
                                             <DataGrid.Columns>
                                                 <DataGridTextColumn Header="№" Binding="{Binding ID}" Width="0.14*" />
-                                                <DataGridTextColumn Header="Дата" Binding="{Binding CreatedDate,  StringFormat='{}{0:dd.MM.yyyy}'}" Width="0.25*" />
+                                                <DataGridTextColumn Header="Дата" Binding="{Binding CreatedDate,  StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" Width="0.25*" />
                                                 <DataGridTextColumn Header="АЗС" Binding="{Binding Client.Description}" Width="0.61*" />
                                             </DataGrid.Columns>
                                         </DataGrid>
@@ -58,26 +58,12 @@
                                 </StackPanel>
                             </GroupBox>
                             <ContentControl>
-                            <Button Margin="0 10 0 0" Content="Копіювати вибрану накладну" Command="{Binding CopyOrderCommand}"/>
+                                <Button Margin="0 10 0 0" Content="Копіювати вибрану накладну" Command="{Binding CopyOrderCommand}"/>
                                 <ContentControl.Style>
                                     <Style TargetType="ContentControl">
                                         <Setter Property="IsEnabled" Value="True" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding Path=CurrentOrder}" Value="{x:Null}">
-                                                <Setter Property="IsEnabled" Value="False"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ContentControl.Style>
-                            </ContentControl>
-
-                            <ContentControl>
-                                <Button Margin="0 10 0 0" Content="Друк стікера" Command="{Binding LabelPrintCommand}"/>
-                                <ContentControl.Style>
-                                    <Style TargetType="ContentControl">
-                                        <Setter Property="IsEnabled" Value="True" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Path=SelectedPosition}" Value="{x:Null}">
                                                 <Setter Property="IsEnabled" Value="False"/>
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -123,13 +109,31 @@
                                 Command="{Binding SaveOrderCommand}" 
                                 IsEnabled="{Binding IsSavingAllowed}">
                         </Button>
-                        <ContentControl>
-                        <Button Content="Попередній перегляд"
+                        <ContentControl DockPanel.Dock="Right">
+                        <Button Content="Друк наклкдної"
                                 HorizontalAlignment="Right"
                                 Background="LightSkyBlue"
                                 Margin="0 0 15 0"
                                 Width="150"
                                 Command="{Binding ReportPreviewCommand}" />
+                            <ContentControl.Style>
+                                <Style TargetType="ContentControl">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsSavingAllowed, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ContentControl.Style>
+                        </ContentControl>
+                        <ContentControl>
+                            <Button 
+                                HorizontalAlignment="Right"
+                                Background="LightYellow"
+                                Margin="0 0 15 0"
+                                Width="150"
+                                Content="Друк стікера" Command="{Binding LabelPrintCommand}"/>
                             <ContentControl.Style>
                                 <Style TargetType="ContentControl">
                                     <Setter Property="IsEnabled" Value="True" />
@@ -189,31 +193,29 @@
                                                 </i:Interaction.Triggers>
                                             </TextBox>
                                         </GroupBox>
-                                        <Expander Header="Товари" Background="LimeGreen" IsExpanded="False">
-                                            <ScrollViewer MaxHeight="100" >
-                                                <DataGrid 
+                                        <Expander Header="Товари" Background="LimeGreen" IsExpanded="{Binding IsProductsExanded}">
+                                            <DataGrid 
                                                 Margin="0 5 0 0" 
                                                 EnableRowVirtualization="True" 
                                                 EnableColumnVirtualization="True"
                                                 VirtualizingStackPanel.VirtualizationMode="Recycling"
                                                 VirtualizingStackPanel.IsVirtualizing="True"
-                                                HeadersVisibility="None" ItemsSource="{Binding Products}" MaxHeight="100" MinHeight="100" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
-                                                    <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
-                                                        <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
-                                                        <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
-                                                        <DataGridTemplateColumn Header="Дія">
-                                                            <DataGridTemplateColumn.CellTemplate>
-                                                                <DataTemplate>
-                                                                    <Button Content="+"
+                                                HeadersVisibility="None" ItemsSource="{Binding Products}" MaxHeight="150" MinHeight="100" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
+                                                    <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
+                                                    <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
+                                                    <DataGridTemplateColumn Header="Дія">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Button Content="+"
                                                                     Command="{Binding DataContext.AddNewPositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
                                                                     CommandParameter="{Binding}" />
-                                                                </DataTemplate>
-                                                            </DataGridTemplateColumn.CellTemplate>
-                                                        </DataGridTemplateColumn>
-                                                    </DataGrid.Columns>
-                                                </DataGrid>
-                                            </ScrollViewer>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
                                         </Expander>
                                     </StackPanel>
                                 </ContentControl>
@@ -239,8 +241,7 @@
                                             </Border>
                                         </ContentControl>
                                         <GroupBox Header="Деталі накладної" Background="DarkOrange" BorderBrush="Orange">
-                                            <ScrollViewer MaxHeight="550" >
-                                                <DataGrid 
+                                            <DataGrid 
                                                     MaxHeight="450"
                                                     Margin="0 5 0 0" 
                                                     EnableRowVirtualization="True" 
@@ -252,34 +253,33 @@
                                                     SelectedItem="{Binding SelectedPosition}"
                                                     ItemsSource="{Binding SelectedPositions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     AutoGenerateColumns="False">
-                                                    <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="Штрих-код" Binding="{Binding Product.Barcode, Mode=OneWay}" MaxWidth="120" />
-                                                        <DataGridTextColumn Header="Товар" Binding="{Binding Product.Caption, Mode=OneWay}" Width="*" />
-                                                        <DataGridTextColumn Header="Кількість" Binding="{Binding ProductQuantity}" />
-                                                        <DataGridTemplateColumn Width="60">
-                                                            <DataGridTemplateColumn.CellTemplate>
-                                                                <DataTemplate>
-                                                                    <ComboBox SelectedItem="{Binding Dimension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Штрих-код" Binding="{Binding Product.Barcode, Mode=OneWay}" MaxWidth="120" />
+                                                    <DataGridTextColumn Header="Товар" Binding="{Binding Product.Caption, Mode=OneWay}" Width="*" />
+                                                    <DataGridTextColumn Header="Кількість" Binding="{Binding ProductQuantity}" />
+                                                    <DataGridTemplateColumn Width="60">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <ComboBox SelectedItem="{Binding Dimension, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                                               SelectedValue="ID"
                                                               DisplayMemberPath="Caption" 
                                                               ItemsSource="{Binding DataContext.Dimensions, Mode=TwoWay, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}" />
-                                                                </DataTemplate>
-                                                            </DataGridTemplateColumn.CellTemplate>
-                                                        </DataGridTemplateColumn>
-                                                        <DataGridTextColumn Header="Ціна" Binding="{Binding Product.Price, Mode=OneWay}" />
-                                                        <DataGridTextColumn Header="Всього" Binding="{Binding TotalPrice}" />
-                                                        <DataGridTemplateColumn Header="Дія" Width="43">
-                                                            <DataGridTemplateColumn.CellTemplate>
-                                                                <DataTemplate>
-                                                                    <Button Content="-"
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                    <DataGridTextColumn Header="Ціна" Binding="{Binding Product.Price, Mode=OneWay}" />
+                                                    <DataGridTextColumn Header="Всього" Binding="{Binding TotalPrice}" />
+                                                    <DataGridTemplateColumn Header="Дія" Width="43">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Button Content="-"
                                                             Command="{Binding DataContext.RemovePositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
                                                             CommandParameter="{Binding}" />
-                                                                </DataTemplate>
-                                                            </DataGridTemplateColumn.CellTemplate>
-                                                        </DataGridTemplateColumn>
-                                                    </DataGrid.Columns>
-                                                </DataGrid>
-                                            </ScrollViewer>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
                                         </GroupBox>
                                         <Border BorderThickness="0 0 0 1" BorderBrush="DarkOrange">
                                             <TextBlock FontSize="14" HorizontalAlignment="Right" Text="{Binding TotalOrderSum}" />
@@ -301,7 +301,8 @@
                                 <StackPanel>
                                     <ContentControl>
                                     <GroupBox Header="Клієнт" Background="LightSteelBlue" BorderBrush="Black">
-                                        <ComboBox ItemsSource="{Binding Clients}" SelectedValuePath="Description" DisplayMemberPath="Description" SelectedItem="{Binding SelectedClient}" />
+                                        <ComboBox ItemsSource="{Binding Clients}" 
+                                                  SelectedItem="{Binding SelectedClient}" />
                                     </GroupBox>
                                         <ContentControl.Style>
                                             <Style TargetType="ContentControl">
@@ -341,31 +342,29 @@
                                         </ContentControl.Style>
                                     </ContentControl>
                                     <ContentControl Margin="0 15 0 0">
-                                    <Expander Header="Всі товари" Background="LimeGreen" IsExpanded="True">
-                                            <ScrollViewer MaxHeight="550" >
-                                                <DataGrid Margin="0 5 0 0" 
+                                        <Expander Header="Всі товари" Background="LimeGreen" IsExpanded="True">
+                                            <DataGrid Margin="0 5 0 0" 
                                                           MaxHeight="550"
                                                   EnableRowVirtualization="True" 
                                                   EnableColumnVirtualization="True"
                                                   VirtualizingStackPanel.VirtualizationMode="Recycling"
                                                   VirtualizingStackPanel.IsVirtualizing="True"
                                                   ItemsSource="{Binding Products}" MinHeight="150" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False">
-                                                    <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
-                                                        <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
-                                                        <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
-                                                        <DataGridTemplateColumn Header="Дія">
-                                                            <DataGridTemplateColumn.CellTemplate>
-                                                                <DataTemplate>
-                                                                    <Button Content="+"
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Код" Binding="{Binding Barcode}" Width="0.3*" />
+                                                    <DataGridTextColumn Header="Назва" Binding="{Binding Caption}" Width="0.3*" />
+                                                    <DataGridTextColumn Header="Ціна" Binding="{Binding Price}" Width="0.3*" />
+                                                    <DataGridTemplateColumn Header="Дія">
+                                                        <DataGridTemplateColumn.CellTemplate>
+                                                            <DataTemplate>
+                                                                <Button Content="+"
                                                                     Command="{Binding DataContext.AddNewPositionCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}, Mode=FindAncestor}}"
                                                                     CommandParameter="{Binding}" />
-                                                                </DataTemplate>
-                                                            </DataGridTemplateColumn.CellTemplate>
-                                                        </DataGridTemplateColumn>
-                                                    </DataGrid.Columns>
-                                                </DataGrid>
-                                            </ScrollViewer>
+                                                            </DataTemplate>
+                                                        </DataGridTemplateColumn.CellTemplate>
+                                                    </DataGridTemplateColumn>
+                                                </DataGrid.Columns>
+                                            </DataGrid>
                                         </Expander>
                                         <ContentControl.Style>
                                             <Style TargetType="ContentControl">
@@ -386,7 +385,7 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
-            <TabItem Header="Накладна" TabIndex="1">
+            <TabItem Header="Друк" TabIndex="1">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="40" />

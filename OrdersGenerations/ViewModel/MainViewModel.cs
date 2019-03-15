@@ -230,8 +230,24 @@ namespace OrdersGenerations.ViewModel
                 if (Equals(_filterProductString, value))
                     return;
                 _filterProductString = value;
+                IsProductsExanded = true;
                 RaisePropertyChanged("FilterProductString");
                 FilteredProducts.Refresh();
+                if (string.IsNullOrWhiteSpace(_filterProductString))
+                    IsProductsExanded = false;
+            }
+        }
+
+        private bool _isProductsExanded;
+        public bool IsProductsExanded
+        {
+            get { return _isProductsExanded; }
+            set
+            {
+                if (Equals(_isProductsExanded, value))
+                    return;
+                _isProductsExanded = value;
+                RaisePropertyChanged("IsProductsExanded");
             }
         }
 
@@ -408,7 +424,6 @@ namespace OrdersGenerations.ViewModel
                 return _reportPreviewCommand ?? (_reportPreviewCommand = new RelayCommand<Position>((position) =>
                 {
                     PrintUtil.Preview(_currentOrder);
-                    Thread.Sleep(100);
                     SelectedTab = 1;
                 }));
             }
@@ -433,33 +448,41 @@ namespace OrdersGenerations.ViewModel
             {
                 return _labelPrintCommand ?? (_labelPrintCommand = new RelayCommand(() =>
                 {
-                    SelectedTab = 1;
-                    if (_selectedPosition != null)
+                    var labels = new List<ItemLabelViewModel>();
+                    var positionsWithBarcode = _currentOrder.Positions.Where(x => x.Product != null);
+                    foreach (var position in positionsWithBarcode)
                     {
-                        if (_selectedPosition.Product != null)
+                        if (string.IsNullOrEmpty(position.Product.Barcode))
                         {
-                            if (string.IsNullOrEmpty(_selectedPosition.Product.Barcode))
-                            {
-                                Random rnd = new Random();
-                                string newBarcode = rnd.Next(10000, 99000).ToString();
-                                _selectedPosition.Product.Barcode = newBarcode;
-                                _productRepository.SaveProduct(_selectedPosition.Product);
-                                PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
-                                return;
-                            }
-                            else
-                            {
-                                if (_selectedPosition.Product.Barcode.Length == 5)
+                            Random rnd = new Random();
+                            string newBarcode = rnd.Next(10000, 99000).ToString();
+                            _selectedPosition.Product.Barcode = newBarcode;
+                            _productRepository.SaveProduct(_selectedPosition.Product);
+                        }
+
+                        for (int i = 0; i < position.ProductQuantity; i++)
+                        {
+                            if (position.Product.Barcode.Length != 5)
+                                labels.Add(new ItemLabelViewModel()
                                 {
-                                    PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
-                                    return;
-                                }
+                                    Barcode = string.Empty,
+                                    BarcodeNumber = string.Empty,
+                                    Name = position.Product.Caption
+                                });
 
-                                PrintUtil.PrintLabelsWithoutBarcode(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
-                            }
-
+                            if (position.Product.Barcode.Length == 5)
+                                labels.Add(new ItemLabelViewModel()
+                                {
+                                    Barcode = string.Format("*{0}*", position.Product.Barcode),
+                                    BarcodeNumber = position.Product.Barcode,
+                                    Name = position.Product.Caption
+                                });
                         }
                     }
+
+                    PrintUtil.PrintLabels(labels);
+
+                    SelectedTab = 1;
                 }));
             }
         }
