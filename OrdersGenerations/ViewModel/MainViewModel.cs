@@ -327,9 +327,17 @@ namespace OrdersGenerations.ViewModel
             if (string.IsNullOrWhiteSpace(_filterProductString))
                 return true;
             Product o = product as Product;
-            return o.Barcode.ToLower().Contains(_filterProductString.ToLower())
-                || o.Caption.ToLower().Contains(_filterProductString.ToLower())
-                || o.Price.ToString("0.00").ToLower().Contains(_filterProductString.ToLower());
+            bool barcode = false, caption = false, price = false;
+            if (o.Barcode != null)
+                barcode = o.Barcode.ToLower().Contains(_filterProductString.ToLower());
+            if (o.Caption != null)
+                caption = o.Caption.ToLower().Contains(_filterProductString.ToLower());
+            price = o.Price.ToString("0.00").ToLower().Contains(_filterProductString.ToLower());
+
+            if (barcode || caption || price)
+                return true;
+
+            return false;
         }
 
         private bool OnOrdersFilter(object order)
@@ -337,8 +345,7 @@ namespace OrdersGenerations.ViewModel
             if (string.IsNullOrWhiteSpace(_filteredOrdersString))
                 return true;
             Order o = order as Order;
-            return o.Client.Description.ToLower().Contains(_filteredOrdersString.ToLower())
-                || o.CreatedDate.ToShortDateString().ToLower().Contains(_filteredOrdersString.ToLower());
+            return o.CreatedDate.ToShortDateString().ToLower().Contains(_filteredOrdersString.ToLower());
         }
 
         private void AddProductIntoPositions(Product product)
@@ -442,7 +449,7 @@ namespace OrdersGenerations.ViewModel
                             }
                             else
                             {
-                                if(_selectedPosition.Product.Barcode.Length == 5)
+                                if (_selectedPosition.Product.Barcode.Length == 5)
                                 {
                                     PrintUtil.PrintLabels(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
                                     return;
@@ -450,7 +457,7 @@ namespace OrdersGenerations.ViewModel
 
                                 PrintUtil.PrintLabelsWithoutBarcode(_selectedPosition.Product, short.Parse(_selectedPosition.ProductQuantity.ToString()));
                             }
-                           
+
                         }
                     }
                 }));

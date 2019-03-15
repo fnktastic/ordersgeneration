@@ -9,7 +9,7 @@
           <Paragraph>
             <TextRuns>
               <TextRun>
-                <Value>Термін придатності: необмежений</Value>
+                <Value>Термін придатності: необмежений.</Value>
                 <Style>
                   <FontFamily>Calibri</FontFamily>
                   <FontSize>4.5pt</FontSize>
@@ -23,7 +23,7 @@
           <Paragraph>
             <TextRuns>
               <TextRun>
-                <Value>Замовлено Stels</Value>
+                <Value> Виробник Китай. Виготовлено для Stels Дата виготовлення 21.01.2019</Value>
                 <Style>
                   <FontFamily>Calibri</FontFamily>
                   <FontSize>4.5pt</FontSize>
@@ -50,9 +50,10 @@
           </Paragraph>
         </Paragraphs>
         <rd:DefaultName>Textbox3</rd:DefaultName>
-        <Top>1.29286cm</Top>
-        <Height>0.44537cm</Height>
-        <Width>3.00583cm</Width>
+        <Top>1.2223cm</Top>
+        <Left>0.27781cm</Left>
+        <Height>0.51593cm</Height>
+        <Width>2.72802cm</Width>
         <Style>
           <Border>
             <Style>None</Style>
@@ -104,7 +105,7 @@
                 <Value>=First(Fields!Name.Value, "DataSet2")</Value>
                 <Style>
                   <FontFamily>Calibri</FontFamily>
-                  <FontSize>5pt</FontSize>
+                  <FontSize>4.5pt</FontSize>
                 </Style>
               </TextRun>
             </TextRuns>
@@ -115,7 +116,7 @@
         </Paragraphs>
         <rd:DefaultName>Caption</rd:DefaultName>
         <Top>0.72894cm</Top>
-        <Height>0.56392cm</Height>
+        <Height>0.45809cm</Height>
         <Width>3.00583cm</Width>
         <ZIndex>2</ZIndex>
         <Style>

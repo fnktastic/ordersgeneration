@@ -9,21 +9,7 @@
           <Paragraph>
             <TextRuns>
               <TextRun>
-                <Value>Термін придатності: необмежений</Value>
-                <Style>
-                  <FontFamily>Calibri</FontFamily>
-                  <FontSize>4.5pt</FontSize>
-                </Style>
-              </TextRun>
-            </TextRuns>
-            <Style>
-              <TextAlign>Center</TextAlign>
-            </Style>
-          </Paragraph>
-          <Paragraph>
-            <TextRuns>
-              <TextRun>
-                <Value>Замовлено Stels</Value>
+                <Value>Термін придатності: необмежений. Виробник Китай. Виготовлено для Stels Дата виготовлення 21.01.2019</Value>
                 <Style>
                   <FontFamily>Calibri</FontFamily>
                   <FontSize>4.5pt</FontSize>
@@ -50,16 +36,15 @@
           </Paragraph>
         </Paragraphs>
         <rd:DefaultName>Textbox3</rd:DefaultName>
-        <Top>1.29286cm</Top>
-        <Height>0.44537cm</Height>
-        <Width>3.00583cm</Width>
+        <Top>1.08781cm</Top>
+        <Left>0.31089cm</Left>
+        <Height>0.65042cm</Height>
+        <Width>2.69494cm</Width>
         <Style>
           <Border>
             <Style>None</Style>
           </Border>
           <VerticalAlign>Middle</VerticalAlign>
-          <PaddingLeft>1pt</PaddingLeft>
-          <PaddingRight>1pt</PaddingRight>
         </Style>
       </Textbox>
       <Textbox Name="Caption">
@@ -82,7 +67,7 @@
           </Paragraph>
         </Paragraphs>
         <rd:DefaultName>Caption</rd:DefaultName>
-        <Height>0.94008cm</Height>
+        <Height>0.78133cm</Height>
         <Width>3.00583cm</Width>
         <ZIndex>1</ZIndex>
         <Style>

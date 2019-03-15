@@ -40,9 +40,9 @@
                                              Controls:TextBoxHelper.Watermark="Пошук накладних"
                                              IsEnabled="{Binding AllowChanges, Mode=TwoWay}"
                                              Text="{Binding FilteredOrdersString, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <ScrollViewer MaxHeight="900" >
+                                    <ScrollViewer MaxHeight="400" >
                                         <DataGrid ItemsSource="{Binding Orders}" 
-                                                  MaxHeight="900"
+                                                  MaxHeight="400"
                                               EnableRowVirtualization="True" 
                                               EnableColumnVirtualization="True"
                                               VirtualizingStackPanel.VirtualizationMode="Recycling"
