@@ -452,12 +452,15 @@ namespace OrdersGenerations.ViewModel
                     var positionsWithBarcode = _currentOrder.Positions.Where(x => x.Product != null);
                     foreach (var position in positionsWithBarcode)
                     {
-                        if (string.IsNullOrEmpty(position.Product.Barcode))
+                        if (position.Product == null)
+                            continue;
+
+                        if (position.Product.Barcode == null || string.IsNullOrEmpty(position.Product.Barcode))
                         {
                             Random rnd = new Random();
                             string newBarcode = rnd.Next(10000, 99000).ToString();
-                            _selectedPosition.Product.Barcode = newBarcode;
-                            _productRepository.SaveProduct(_selectedPosition.Product);
+                            position.Product.Barcode = newBarcode;
+                            _productRepository.SaveProduct(position.Product);
                         }
 
                         for (int i = 0; i < position.ProductQuantity; i++)
@@ -480,9 +483,11 @@ namespace OrdersGenerations.ViewModel
                         }
                     }
 
-                    PrintUtil.PrintLabels(labels);
-
                     SelectedTab = 1;
+
+                    Thread.Sleep(1000);
+
+                    PrintUtil.PrintLabels(labels);
                 }));
             }
         }
